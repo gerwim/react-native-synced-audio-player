@@ -1,38 +1,13 @@
 import { useEvent } from 'expo';
-import ReactNativeSyncedAudioPlayer, { ReactNativeSyncedAudioPlayerView } from 'react-native-synced-audio-player';
+import ReactNativeSyncedAudioPlayer from 'react-native-synced-audio-player';
 import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 export default function App() {
-  const onChangePayload = useEvent(ReactNativeSyncedAudioPlayer, 'onChange');
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{ReactNativeSyncedAudioPlayer.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{ReactNativeSyncedAudioPlayer.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await ReactNativeSyncedAudioPlayer.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <ReactNativeSyncedAudioPlayerView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
       </ScrollView>
     </SafeAreaView>
   );
