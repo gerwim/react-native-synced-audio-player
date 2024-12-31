@@ -1,5 +1,4 @@
 import Slider from "@react-native-community/slider";
-import { useEvent } from "expo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, SafeAreaView, ScrollView, Text, View } from "react-native";
 import {
@@ -82,11 +81,10 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
+        <Text style={styles.header}>ReactNativeSyncedAudio</Text>
         <Button title="Play" onPress={() => play()} />
         <Button title="Pause" onPress={() => pause()} />
         <Button title="Stop" onPress={() => stop()} />
-        <Button title="Reset" onPress={() => reset()} />
         <Text>Current position {currentPos}</Text>
         <View style={styles.group}>
           <Text>Playback Speed: {playbackSpeed.toFixed(2)}x</Text>
@@ -127,23 +125,10 @@ export default function App() {
   );
 }
 
-function Group(props: { name: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
-    </View>
-  );
-}
-
 const styles = {
   header: {
     fontSize: 30,
     margin: 20,
-  },
-  groupHeader: {
-    fontSize: 20,
-    marginBottom: 20,
   },
   group: {
     margin: 20,
