@@ -1,6 +1,6 @@
 {
   "name": "react-native-synced-audio-player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Plays multiple audio files in sync",
   "main": "build/index.js",
   "types": "build/index.d.ts",
