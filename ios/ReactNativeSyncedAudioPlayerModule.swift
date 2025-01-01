@@ -8,6 +8,7 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
     private let queue = DispatchQueue(label: "com.reactnativesyncedaudioplayer.queue")
     private var trackVolumes: [CMPersistentTrackID: Float] = [:]
     private var mutedTracks: Set<CMPersistentTrackID> = []
+    private var audioSession: AVAudioSession?
 
     public func definition() -> ModuleDefinition {
         Name("ReactNativeSyncedAudioPlayer")
@@ -18,6 +19,10 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
             
             Task {
                 do {
+                    // Configure audio session for background playback
+                    try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+                    try AVAudioSession.sharedInstance().setActive(true)
+                    
                     let asset = AVURLAsset(url: value.uri!)
                     guard let assetTrack = try await asset.loadTracks(withMediaType: .audio).first else {
                         EXFatal(EXErrorWithMessage("No audio track found in asset"))
@@ -74,18 +79,27 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
 
         Function("play") { () -> Void in
             if self.player == nil {
-                let playerItem = AVPlayerItem(asset: self.composition)
-                playerItem.audioMix = audioMix
-                self.player = AVPlayer(playerItem: playerItem)
-                
-                // Observe when the player item loops. We don't use the AVPlayerLooper because it has a different AudioMix so all changes will be lost
-                NotificationCenter.default.addObserver(
-                    forName: .AVPlayerItemDidPlayToEndTime,
-                    object: playerItem,
-                    queue: .main
-                ) { [weak self] _ in
-                    self?.player?.seek(to: .zero)
-                    self?.player?.play()
+                do {
+                    // Configure audio session for background playback
+                    try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+                    try AVAudioSession.sharedInstance().setActive(true)
+                    
+                    let playerItem = AVPlayerItem(asset: self.composition)
+                    playerItem.audioMix = audioMix
+                    self.player = AVPlayer(playerItem: playerItem)
+                    
+                    // Observe when the player item loops. We don't use the AVPlayerLooper because it has a different AudioMix so all changes will be lost
+                    NotificationCenter.default.addObserver(
+                        forName: .AVPlayerItemDidPlayToEndTime,
+                        object: playerItem,
+                        queue: .main
+                    ) { [weak self] _ in
+                        self?.player?.seek(to: .zero)
+                        self?.player?.play()
+                    }
+                } catch {
+                    EXFatal(EXErrorWithMessage("Failed to configure audio session: \(error.localizedDescription)"))
+                    return
                 }
             }
             self.player?.play()
@@ -111,6 +125,8 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
             self.audioMix = AVMutableAudioMix()
             self.trackVolumes.removeAll()
             self.mutedTracks.removeAll()
+            
+            try? AVAudioSession.sharedInstance().setActive(false)
         }
 
         Function("setPlaybackSpeed") { (rate: Double) -> Void in
