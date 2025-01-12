@@ -43,12 +43,21 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
                                 return
                             }
                             
-                            // Insert the audio track into the composition
-                            try compositionTrack.insertTimeRange(
-                                CMTimeRange(start: .zero, duration: asset.duration),
-                                of: assetTrack,
-                                at: .zero
-                            )
+                            // Calculate how many times we need to repeat the track to fill an hour
+                            let oneHour = CMTime(seconds: 3600, preferredTimescale: 1)
+                            let assetDuration = asset.duration
+                            let repeatCount = Int(ceil(oneHour.seconds / assetDuration.seconds))
+                            
+                            // Insert the audio track multiple times
+                            var currentTime = CMTime.zero
+                            for _ in 0..<repeatCount {
+                                try compositionTrack.insertTimeRange(
+                                    CMTimeRange(start: .zero, duration: assetDuration),
+                                    of: assetTrack,
+                                    at: currentTime
+                                )
+                                currentTime = CMTimeAdd(currentTime, assetDuration)
+                            }
                             
                             // Create audio mix parameters for the track
                             let inputParameters = AVMutableAudioMixInputParameters(track: compositionTrack)
