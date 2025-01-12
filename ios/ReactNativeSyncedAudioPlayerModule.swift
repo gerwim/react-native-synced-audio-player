@@ -9,6 +9,7 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
     private var trackVolumes: [CMPersistentTrackID: Float] = [:]
     private var mutedTracks: Set<CMPersistentTrackID> = []
     private var audioSession: AVAudioSession?
+    private var playerLooper: AVPlayerLooper?
 
     public func definition() -> ModuleDefinition {
         Name("ReactNativeSyncedAudioPlayer")
@@ -86,16 +87,11 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
                     
                     let playerItem = AVPlayerItem(asset: self.composition)
                     playerItem.audioMix = audioMix
-                    self.player = AVPlayer(playerItem: playerItem)
+                    self.player = AVQueuePlayer(playerItem: playerItem)
                     
-                    // Observe when the player item loops. We don't use the AVPlayerLooper because it has a different AudioMix so all changes will be lost
-                    NotificationCenter.default.addObserver(
-                        forName: .AVPlayerItemDidPlayToEndTime,
-                        object: playerItem,
-                        queue: .main
-                    ) { [weak self] _ in
-                        self?.player?.seek(to: .zero)
-                        self?.player?.play()
+                    // Create a player looper
+                    if let queuePlayer = self.player as? AVQueuePlayer {
+                        self.playerLooper = AVPlayerLooper(player: queuePlayer, templateItem: playerItem)
                     }
                 } catch {
                     EXFatal(EXErrorWithMessage("Failed to configure audio session: \(error.localizedDescription)"))
@@ -120,6 +116,8 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
 
         Function("reset") { () -> Void in
             self.player?.pause()
+            self.playerLooper?.disableLooping()
+            self.playerLooper = nil
             self.player = nil
             self.composition = AVMutableComposition()
             self.audioMix = AVMutableAudioMix()
@@ -165,14 +163,14 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
     }
     
     private func setVolume (trackID: CMPersistentTrackID, volume: Float) {
-        guard let playerItem = player?.currentItem,
-              let asset = playerItem.asset as? AVMutableComposition else { return }
+        guard let queuePlayer = player as? AVQueuePlayer else { return }
             
+        // Create new audio mix
         let audioMix = AVMutableAudioMix()
         var inputParameters: [AVMutableAudioMixInputParameters] = []
         
         // Apply volume settings for all tracks
-        for track in asset.tracks(withMediaType: .audio) {
+        for track in composition.tracks(withMediaType: .audio) {
             let params = AVMutableAudioMixInputParameters(track: track)
             if track.trackID == trackID {
                 params.setVolume(volume, at: CMTime.zero)
@@ -185,6 +183,10 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
             
         // Apply input parameters to the audio mix
         audioMix.inputParameters = inputParameters
-        playerItem.audioMix = audioMix
+        
+        // Update audio mix for all items in the queue
+        for item in queuePlayer.items() {
+            item.audioMix = audioMix
+        }
     }
 }
