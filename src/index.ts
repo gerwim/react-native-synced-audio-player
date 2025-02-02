@@ -42,6 +42,10 @@ export function unmute(trackIndex: number): void {
   ReactNativeSyncedAudioPlayerModule.unmute(trackIndex);
 }
 
+export function seek(seconds: number): void {
+  ReactNativeSyncedAudioPlayerModule.seek(seconds);
+}
+
 export function setVolume(trackIndex: number, volume: number): void {
   ReactNativeSyncedAudioPlayerModule.setVolume(trackIndex, volume);
 }

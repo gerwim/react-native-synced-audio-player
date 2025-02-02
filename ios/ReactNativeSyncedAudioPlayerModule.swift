@@ -151,6 +151,16 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
             self.player?.seek(to: .zero)
         }
         
+        Function("seek") { (seconds: Double) -> Void in
+            guard let player = self.player else {
+                return
+            }
+            
+            let currentTime = player.currentTime()
+            let newTime = CMTimeAdd(currentTime, CMTime(seconds: seconds, preferredTimescale: 1))
+            player.seek(to: newTime, toleranceBefore: .zero, toleranceAfter: .zero)
+        }
+        
         Function("mute") { (trackID: CMPersistentTrackID) -> Void in
             self.mutedTracks.insert(trackID)
             setVolume(trackID: trackID, volume: 0)

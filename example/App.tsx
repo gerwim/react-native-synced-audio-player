@@ -11,7 +11,7 @@ import {
   setPlaybackSpeed,
   mute,
   unmute,
-  setVolume,
+  setVolume, seek
 } from "react-native-synced-audio-player";
 
 export default function App() {
@@ -85,6 +85,8 @@ export default function App() {
         <Button title="Play" onPress={() => play()} />
         <Button title="Pause" onPress={() => pause()} />
         <Button title="Stop" onPress={() => stop()} />
+        <Button title="Seek -5 seconds" onPress={() => seek(-5)} />
+        <Button title="Seek +5 seconds" onPress={() => seek(5)} />
         <Text>Current position {currentPos}</Text>
         <View style={styles.group}>
           <Text>Playback Speed: {playbackSpeed.toFixed(2)}x</Text>
