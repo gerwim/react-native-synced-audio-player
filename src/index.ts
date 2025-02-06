@@ -46,6 +46,10 @@ export function seek(seconds: number): void {
   ReactNativeSyncedAudioPlayerModule.seek(seconds);
 }
 
+export function getVolume(trackIndex: number): number {
+  return ReactNativeSyncedAudioPlayerModule.getVolume(trackIndex);
+}
+
 export function setVolume(trackIndex: number, volume: number): void {
   ReactNativeSyncedAudioPlayerModule.setVolume(trackIndex, volume);
 }

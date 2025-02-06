@@ -8,6 +8,7 @@ declare class ReactNativeSyncedAudioPlayerModule extends NativeModule {
   setPlaybackSpeed(rate: number): void;
   mute(trackIndex: number): void;
   unmute(trackIndex: number): void;
+  getVolume(trackIndex: number): number;
   setVolume(trackIndex: number, volume: number): void;
   seek(seconds: number): void;
   play(): void;
