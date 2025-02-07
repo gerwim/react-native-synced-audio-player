@@ -173,9 +173,7 @@ public class ReactNativeSyncedAudioPlayerModule: Module {
         }
 
         Function("setVolume") { (trackID: CMPersistentTrackID, volume: Float) -> Void in
-            if !self.mutedTracks.contains(trackID) {
-                self.trackVolumes[trackID] = volume
-            }
+            self.trackVolumes[trackID] = volume
             setVolume(trackID: trackID, volume: self.mutedTracks.contains(trackID) ? 0 : volume)
         }
 
